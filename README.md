@@ -1,6 +1,6 @@
 # EdgeMambaFormer
 
-Code and all results for:
+
 
 > **Do Boundary-Attention Modules Improve Polyp Segmentation? A Controlled Ablation of Wavelet, State-Space and Dual-Branch Components**
 > Indroneel Roy, Mohammad Kamruzzaman Khan Prince — Shahjalal University of Science and Technology
@@ -48,13 +48,6 @@ cd EdgemambaFormer
 pip install -r requirements.txt
 ```
 
-## Reproduce the tables — no GPU needed
-
-```bash
-python scripts/make_tables.py
-```
-
-Prints every table in the paper from `results/all_runs.csv` (39 runs × 5 test sets).
 
 ## Data
 
@@ -89,26 +82,8 @@ Each model trains with the exact recipe used in the paper (see `RECIPES` in
 `train.py`). Results go to `results/my_runs.csv`; the paper's results are never
 overwritten.
 
-## Check the pipeline
 
-```bash
-python scripts/verify_pipeline.py --data_root data/ --model pranet --ckpt PraNet-19.pth
-python scripts/verify_scan.py
-```
 
-The first runs PraNet's released checkpoint through our evaluation code
-(0.8979 Kvasir mDice vs 0.8980 published). The second checks the Mamba scan
-against a step-by-step reference.
-
-## Make the qualitative figure
-
-```bash
-python scripts/qualitative_figure.py --data_root data/ \
-    --ckpt full=checkpoints/full_s43/full_s43_weights.pth \
-    --ckpt unet=... --ckpt unetpp=... --ckpt pranet=... --ckpt sanet=... --ckpt polyppvt=...
-```
-
-Images are chosen by polyp size, not by which model looks best.
 
 ## Layout
 
@@ -125,8 +100,8 @@ figures/     generated figures
 ## Limitations
 
 One backbone (PVTv2-B2); three seeds, so effects below ~0.5 mDice cannot be
-resolved; the auxiliary head is supervised with masks, not boundaries; U-Net
-and UNet++ may not be fully converged at 100 epochs.
+resolved; the auxiliary head is supervised with masks, not boundaries;
+
 
 ## Citation
 
