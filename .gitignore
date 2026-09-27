@@ -1,0 +1,29 @@
+# Data (download separately; see README)
+data/TrainDataset/
+data/TestDataset/
+*.zip
+*.tar.gz
+
+# Checkpoints
+checkpoints/
+*.pth
+*.pt
+*.safetensors
+
+# Logs and run artefacts
+logs/
+results/backups/
+wandb/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+*.egg-info/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
