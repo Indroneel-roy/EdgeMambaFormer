@@ -1,0 +1,11 @@
+torch
+torchvision
+timm
+albumentations
+opencv-python-headless
+Pillow
+numpy
+scipy
+pandas
+matplotlib
+tqdm
