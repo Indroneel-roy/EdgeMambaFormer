@@ -5,9 +5,9 @@
 
 
 We built EdgeMambaFormer, a polyp-segmentation network that couples a pretrained
-PVTv2-B2 encoder with three components — a Wavelet Edge Attention Gate
+PVTv2-B2 encoder with three components a Wavelet Edge Attention Gate
 (WaveletEAG), a Cross-Scale Mamba Module (CSMM) and a Dual-Branch Transformer
-Decoder (DBTD) — and tested each one with matched controls and three random seeds.
+Decoder (DBTD) and tested each one with matched controls and three random seeds.
 **No component changes accuracy significantly; equivalence tests bound the
 zero-shot benefit of each to at most 1.7 mDice points.**
 
