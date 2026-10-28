@@ -3,11 +3,6 @@ import torch.nn.functional as F
 
 
 def structure_loss(pred, mask):
-    """
-    F3Net / PraNet structure loss: boundary-weighted BCE + boundary-weighted IoU.
-
-    `pred` is a raw logit; `mask` is a float binary target. Both (B,1,H,W).
-    """
     weit = 1 + 5 * torch.abs(
         F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
 
@@ -23,16 +18,6 @@ def structure_loss(pred, mask):
 
 
 def boundary_target(mask, band=4):
-    """
-    Variant G: turn a filled mask into a boundary band of width ~2*band.
-
-    Section 4.8 concedes the edge branch is supervised with the segmentation
-    mask rather than boundary annotations. With this, sigma is supervised
-    against an actual boundary, so the "boundary-probability map" language in
-    Section 3.2 becomes accurate.
-
-    Uses max-pool dilation/erosion so it stays on-GPU and differentiable-free.
-    """
     k = 2 * band + 1
     dil = F.max_pool2d(mask, k, stride=1, padding=band)
     ero = -F.max_pool2d(-mask, k, stride=1, padding=band)
@@ -40,18 +25,12 @@ def boundary_target(mask, band=4):
 
 
 def edgemamba_loss(outputs, target, variant='full',
-                   lambda_pred=1.0, lambda_edge=0.3, band=4):
-    """
-    Total objective.
+                   lambda_pred=1.0, lambda_aux=0.3, band=4):
 
-      no_aux (D)          -> lambda_edge = 0
-      boundary_target (G) -> edge head supervised on a boundary band
-      no_eag (X1)         -> no edge head exists; prediction term only
-    """
     loss = lambda_pred * structure_loss(outputs['pred'], target)
     parts = {'pred': float(loss.detach())}
 
-    if 'edge' in outputs and variant != 'no_aux' and lambda_edge > 0:
+    if 'edge' in outputs and variant != 'no_aux' and lambda_aux > 0:
         if variant == 'boundary_target':
             tgt = boundary_target(target, band)
             # A thin band is mostly background, so BCE alone behaves better
@@ -59,7 +38,7 @@ def edgemamba_loss(outputs, target, variant='full',
             e = F.binary_cross_entropy_with_logits(outputs['edge'], tgt)
         else:
             e = structure_loss(outputs['edge'], target)
-        loss = loss + lambda_edge * e
+        loss = loss + lambda_aux * e
         parts['edge'] = float(e.detach())
 
     parts['total'] = float(loss.detach())
@@ -77,8 +56,7 @@ def soft_dice_loss(logit, gt, eps=1.0):
 
 
 def loss_unet(out, gt):
-    """U-Net Eq. 1: soft-max cross entropy weighted by class frequency (w_c).
-    The touching-cell term w_0 of Eq. 2 does not apply to single polyps."""
+  
     t = (gt >= 0.5).long().squeeze(1)
     f = t.float().mean().clamp(1e-4, 1 - 1e-4)
     w = torch.stack([0.5 / (1 - f), 0.5 / f]).to(out.device)
@@ -86,13 +64,13 @@ def loss_unet(out, gt):
 
 
 def loss_unetpp(outs, gt):
-    """UNet++ Eq. 2 on each deep-supervision head: 0.5 * BCE + Dice, averaged."""
+    
     return sum(0.5 * F.binary_cross_entropy_with_logits(o.float(), gt)
                + soft_dice_loss(o, gt) for o in outs) / len(outs)
 
 
 def loss_pranet(outs, gt):
-    """PraNet: L(G, S_g) + sum_i L(G, S_i), L = weighted IoU + weighted BCE."""
+   
     return sum(structure_loss(o.float(), gt) for o in outs)
 
 
@@ -102,6 +80,5 @@ def loss_sanet(out, gt):
 
 
 def loss_polyppvt(outs, gt):
-    """Polyp-PVT Eq. 11: L_main(P2, G) + L_aux(P1, G)."""
     P1, P2 = outs
     return structure_loss(P2, gt) + structure_loss(P1, gt)
