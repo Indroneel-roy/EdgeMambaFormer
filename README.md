@@ -115,15 +115,6 @@ All results use one pretrained backbone (PVTv2-B2). With three seeds, the tests
 exclude effects larger than about 1.7 zero-shot mDice points but cannot resolve
 smaller ones. The auxiliary head is supervised with masks, not boundaries.
 
-## Citation
-
-```bibtex
-@article{roy2026controlled,
-  title  = {Do wavelet, state-space and dual-branch modules improve polyp
-            segmentation with a pretrained {PVTv2-B2} encoder? A controlled ablation},
-  author = {Roy, Indroneel and Prince, Mohammad Kamruzzaman Khan},
-  note   = {Manuscript submitted to PLOS ONE},
-  year   = {2026}
 }
 ```
 
