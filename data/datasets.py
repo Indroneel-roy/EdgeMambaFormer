@@ -12,6 +12,7 @@
 
 """
 
+import hashlib
 import random
 from pathlib import Path
 
@@ -84,24 +85,28 @@ def load_splits(data_root, verbose=True):
     val_pairs = [train_all[i] for i in idx[:n_val]]
     train_pairs = [train_all[i] for i in idx[n_val:]]
 
-    # ── GATE 1: 
-    def stems(ps):
-        return {Path(p).stem for p, _ in ps}
+    # ── GATE 1: leakage check by CONTENT HASH, not by filename.
+    # Filenames are not reliable: CVC-ClinicDB and CVC-ColonDB both number
+    # their images sequentially (1.png, 2.png, ...), so a name-based check
+    # reports collisions between unrelated images. Two files are treated as
+    # the same image only if their bytes are identical (MD5).
+    def hashes(ps):
+        return {hashlib.md5(Path(p).read_bytes()).hexdigest() for p, _ in ps}
 
-    tr, va = stems(train_pairs), stems(val_pairs)
-    assert not (tr & va), f'TRAIN leaks into VAL: {len(tr & va)} images'
+    tr, va = hashes(train_pairs), hashes(val_pairs)
+    assert not (tr & va), f'TRAIN leaks into VAL: {len(tr & va)} identical images'
 
     for name, ps in test.items():
-        te = stems(ps)
-        assert not (tr & te), f'TRAIN leaks into TEST[{name}]: {len(tr & te)} images'
-        assert not (va & te), f'VAL leaks into TEST[{name}]: {len(va & te)} images'
+        te = hashes(ps)
+        assert not (tr & te), f'TRAIN leaks into TEST[{name}]: {len(tr & te)} identical images'
+        assert not (va & te), f'VAL leaks into TEST[{name}]: {len(va & te)} identical images'
 
     if verbose:
         print(f'  TRAIN {len(train_pairs)} | VAL {len(val_pairs)} '
               f'(from TrainDataset, seed {VAL_SPLIT_SEED})')
         for name, ps in test.items():
             print(f'  TEST  {name:<20s} {len(ps):>4d}  ({TEST_SETS[name]})')
-        print('  GATE 1 PASS: no leakage between train / val / test')
+        print('  GATE 1 PASS: no identical images shared by train / val / test (MD5)')
 
     return train_pairs, val_pairs, test
 
