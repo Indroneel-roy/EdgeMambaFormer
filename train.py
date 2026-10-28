@@ -64,7 +64,7 @@ def recipe_for(name):
 
 def compute_loss(name, out, gt):
     if name in EMF_VARIANTS:
-        return edgemamba_loss(out, gt, name, lambda_pred=1.0, lambda_edge=0.3)[0]
+        return edgemamba_loss(out, gt, name, lambda_pred=1.0, lambda_aux=0.3)[0]
     return LOSSES[name](out, gt)
 
 
