@@ -2,7 +2,7 @@
 
 > **Do wavelet, state-space and dual-branch modules improve polyp segmentation with a pretrained PVTv2-B2 encoder? A controlled ablation**
 > Indroneel Roy, Mohammad Kamruzzaman Khan Prince — Shahjalal University of Science and Technology
-> Manuscript submitted to *PLOS ONE*.
+
 
 We built EdgeMambaFormer, a polyp-segmentation network that couples a pretrained
 PVTv2-B2 encoder with three components — a Wavelet Edge Attention Gate
