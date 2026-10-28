@@ -13,8 +13,7 @@ zero-shot benefit of each to at most 1.7 mDice points.**
 
 ## Main results
 
-All numbers below are regenerated from `results/all_runs.csv` by
-`python scripts/make_tables.py` (table numbers match the paper).
+
 
 **Ablation** — zero-shot mDice (mean over CVC-ColonDB, ETIS, CVC-300), three seeds (Tables 5–6):
 
