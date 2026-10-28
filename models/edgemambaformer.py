@@ -1,23 +1,3 @@
-"""
-models/edgemambaformer.py — one class, eleven variants.
-
-VARIANTS
---------
-  full              reference model
-  learned_conv      A: Haar -> parameter-matched LEARNED depthwise conv   <-- THE PAPER
-  random_filter     B: Haar -> frozen RANDOM filters (fixed, but not wavelet)
-  no_decomp         C: no decomposition at all; f1 straight into the gate
-  no_aux            D: lambda_edge = 0 (handled in the loss, flag kept for logging)
-  no_eag            X1: f_e := upsample(proj_high(f4)); no wavelet, no gate
-  no_csmm           X2: BiMamba -> identity; projections retained
-  no_dbtd           X3: dual-branch decoder -> parameter-matched conv decoder
-  image_dwt         E: DWT on the INPUT IMAGE + stride-2 stem (not on f1)
-  transformer_csmm  F: BiMamba -> 2-layer transformer over the same tokens
-  boundary_target   G: identical model; only the edge target changes in the loss
-
-
-"""
-
 import math
 
 import timm
@@ -90,7 +70,7 @@ class LearnedEdgeExtractor(nn.Module):
     Variant A: structurally identical to the Haar path, but the filter values
     are learned. 3*C*2*2 = 768 params at C=64.
 
-    This is the control the paper's central claim requires and currently lacks.
+    This is the central control of the mechanism study (variant A in the paper).
     """
 
     def __init__(self, channels):
@@ -211,7 +191,7 @@ class S6Block(nn.Module):
 
     Within a chunk the recurrence is resolved in parallel via a segment-sum
     decay matrix (all entries <= 1, so numerically stable); state is carried
-    across chunks sequentially. Chunk 32 over ~2541 tokens gives ~80 sequential
+    across chunks sequentially. Chunk 64 over ~2541 tokens gives ~40 sequential
     steps instead of 2541.
     """
 
@@ -403,9 +383,9 @@ class DualBranchDecoder(nn.Module):
         self.local = WindowAttention(dec, window, heads)
         self.ctx_proj = nn.Conv2d(d_model, dec, 1)
 
-        # FIX: the original allocated 4096 slots but only ever indexed 484,
-        # leaving 231,168 parameters that never received a gradient — 45% of
-        # the non-encoder budget, in a paper whose claim is parameter efficiency.
+        # Only the first 484 slots (22 x 22 global tokens) are used and trained;
+        # the remaining slots receive no gradient but are included in the
+        # parameter counts reported in the paper (see Section 2.1.4).
         self.pos_emb = nn.Parameter(torch.zeros(1, max_tokens, dec))
         nn.init.trunc_normal_(self.pos_emb, std=0.02)
 
