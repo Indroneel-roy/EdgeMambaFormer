@@ -97,12 +97,6 @@ Results go to `results/my_runs.csv`; the paper's results are never overwritten.
 `transformer_csmm`, `boundary_target`) that were implemented for future work.
 They were **not run and are not reported** in the paper.
 
-## Reproduce the tables
-
-```bash
-python scripts/make_tables.py                                 # from the paper's runs
-python scripts/make_tables.py --csv results/my_runs.csv       # from your own runs
-```
 
 ## Layout
 
